@@ -19,5 +19,7 @@
 ![Итоговая таблица](https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG)
 
 
-[Почта:](https://accounts.google.com/SignOutOptions?hl=ru&continue=https://mail.google.com/mail&service=mail&ec=GBRAFw)
-[Телеграм:](https://t.me/nsktlnkv) 
+Контакты:
+[Почта](nsktlnkv@gmail.com)
+
+[Телеграм](https://t.me/nsktlnkv) 
