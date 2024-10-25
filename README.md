@@ -9,4 +9,4 @@
 
 2. Создала функцию для загрузки json в таблицу lamoda_orders, загрузила данные. Соединила таблицу lamoda_orders и представление для получения отчета.
 
-![Итоговая таблица]https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG
+![Итоговая таблица](https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG)
