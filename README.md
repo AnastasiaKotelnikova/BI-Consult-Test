@@ -17,3 +17,7 @@
 [Ссылка на файл](https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/ddl.txt)
 
 ![Итоговая таблица](https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG)
+
+
+[Почта:](https://accounts.google.com/SignOutOptions?hl=ru&continue=https://mail.google.com/mail&service=mail&ec=GBRAFw)
+[Телеграм:](https://t.me/nsktlnkv) 
