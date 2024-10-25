@@ -18,8 +18,3 @@
 
 ![Итоговая таблица](https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG)
 
-
-Контакты:
-[Почта](nsktlnkv@gmail.com)
-
-[Телеграм](https://t.me/nsktlnkv) 
