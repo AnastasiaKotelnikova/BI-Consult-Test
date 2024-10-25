@@ -8,4 +8,4 @@
 Затем определила даг, задала параметры и расписание - ежедневная загрузка в 3 ночи. Создала задачи для создания временной и основной таблиц, загрузки данных во временную таблицу и вставки новых данных в основную таблицу и установила зависимости.
 
 2. Создала функцию для загрузки json в таблицу lamoda_orders, загрузила данные. Соединила таблицу lamoda_orders и представление для получения отчета.
-!https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG
+![]https://github.com/AnastasiaKotelnikova/BI-Consult-Test/blob/main/table.PNG
