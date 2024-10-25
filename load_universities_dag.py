@@ -60,8 +60,7 @@ default_args = {
 dag = DAG(
     'load_universities_dag',
     default_args=default_args,
-    tags=["env:test",
-          "layer:test",]
+    tags=["env:test", "layer:test",],
     description='DAG для загрузки данных об университетах',
     schedule='0 3 * * *',  # запуск каждый день в 3 ночи
 )
