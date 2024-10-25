@@ -1,51 +1,52 @@
--- функция для загрузки json в таблицу lamoda_orders
-CREATE OR REPLACE FUNCTION insert_orders_from_json(jsonb_data JSONB)
-RETURNS SETOF lamoda.lamoda_orders AS $$
+-- функция для загрузки json в таблицу lamoda_orders через временную таблицу с ее очисткой, чтобы при повторном запуске избежать дублирования записей
+CREATE OR REPLACE FUNCTION insert_orders_from_json(jsonb_data jsonb)
+RETURNS void AS $$
 BEGIN
-    RETURN QUERY
-    INSERT INTO lamoda.lamoda_orders (
-        id,
-        ordernr,
-        status,
-        paymentmethod,
-        rejectprice,
-        deliveryprice,
-        paymentdate,
-        isconfirmed,
-        "comment",
-        itemquantity,
-        createdat,
-        updatedat,
-        delivered,
-        shipped,
-        deprecatedid,
-        fullsum,
-        currency,
-        hasdiscrepancyacts,
-        region,
-        city,
-        cityid,
-        isvalid,
-        deliveryintervalid,
-        deliverydate,
-        deliveryintervalfrom,
-        deliveryintervalto,
-        isdeliverypricecustom,
-        standarddeliveryprice,
-        deliverydatemax,
-        deliverydatemin,
-        shippingmethodname,
-        shippingmethodcode,
-        serviceleveltypecode,
-        serviceleveltypename,
-        storagedays,
-        cutoff,
-        hasintervals,
-        code,
-        shopname,
-        partnerid,
-        externaldeliveryinfo
-    )
+	DROP TABLE IF EXISTS temp_orders;
+    CREATE TEMP TABLE temp_orders (
+        id text,
+        ordernr text,
+        status text,
+        paymentmethod text,
+        rejectprice text,
+        deliveryprice text,
+        paymentdate text,
+        isconfirmed bool,
+        "comment" text,
+        itemquantity int4,
+        createdat date,
+        updatedat timestamp,
+        delivered text,
+        shipped timestamp,
+        deprecatedid int8,
+        fullsum numeric,
+        currency text,
+        hasdiscrepancyacts bool,
+        region text,
+        city text,
+        cityid text,
+        isvalid bool,
+        deliveryintervalid int8,
+        deliverydate text,
+        deliveryintervalfrom text,
+        deliveryintervalto text,
+        isdeliverypricecustom bool,
+        standarddeliveryprice text,
+        deliverydatemax text,
+        deliverydatemin text,
+        shippingmethodname text,
+        shippingmethodcode text,
+        serviceleveltypecode text,
+        serviceleveltypename text,
+        storagedays text,
+        cutoff text,
+        hasintervals bool,
+        code text,
+        shopname text,
+        partnerid int8,
+        externaldeliveryinfo text
+    );
+    INSERT INTO temp_orders
     SELECT 
         order_record ->> 'id',
         order_record ->> 'orderNr',
@@ -53,13 +54,13 @@ BEGIN
         order_record ->> 'paymentMethod',
         order_record ->> 'rejectPrice',
         order_record ->> 'deliveryPrice',
-        (order_record ->> 'paymentDate')::timestamp,
+        (order_record ->> 'paymentDate')::text,
         (order_record ->> 'isConfirmed')::boolean,
         order_record ->> 'comment',
         (order_record ->> 'itemQuantity')::int,
         (order_record ->> 'createdAt')::date,
         (order_record ->> 'updatedAt')::timestamp,
-        (order_record -> 'dates' ->> 'delivered')::timestamp,
+        (order_record -> 'dates' ->> 'delivered')::text,
         (order_record -> 'dates' ->> 'shipped')::timestamp,
         (order_record ->> 'deprecatedId')::bigint,
         (order_record ->> 'fullSum')::numeric,
@@ -88,14 +89,17 @@ BEGIN
         (order_record -> '_embedded' -> 'partner' ->> 'shopName'),
         (order_record -> '_embedded' -> 'partner' ->> 'partnerId')::bigint,
         (order_record -> '_embedded' -> 'externalDeliveryInfo')
-    FROM JSONB_ARRAY_ELEMENTS(jsonb_data) AS order_record
-    RETURNING *;
+    FROM jsonb_array_elements(jsonb_data -> '_embedded' -> 'orders') AS order_record;
+    INSERT INTO lamoda.lamoda_orders
+    SELECT * FROM temp_orders
+    WHERE (ordernr, partnerid) NOT IN (
+        SELECT ordernr, partnerid FROM lamoda.lamoda_orders
+    );
 END;
 $$ LANGUAGE plpgsql;
 
-
 -- передаем json  в функцию
-SELECT* FROM insert_orders_from_json(
+select insert_orders_from_json(
 '{
   "page" : 1,
   "limit" : 3,
@@ -394,16 +398,15 @@ SELECT* FROM insert_orders_from_json(
       }
     } ]
   }
-}'::jsonb -> '_embedded' -> 'orders');
+}'::jsonb);
 
-
--- итоговая таблица
-SELECT
+-- запрос для соединения таблиц и получения финального ответа
+select 
 	lo.id as "номер заказа",
 	lo.createdat as "дата заказа",
 	lo.shopname as "магазин",
 	mps.productstatusru as "статус продукта",
     lo.region as "регион",
     lo.city as "город"
-FROM lamoda.lamoda_orders lo
-JOIN lamoda.map_product_status mps ON lo.status = mps.productstatus;
+from lamoda.lamoda_orders lo
+join lamoda.map_product_status mps ON lo.status = mps.productstatus;
