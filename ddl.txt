@@ -1,0 +1,409 @@
+-- функция для загрузки json в таблицу lamoda_orders
+CREATE OR REPLACE FUNCTION insert_orders_from_json(jsonb_data JSONB)
+RETURNS SETOF lamoda.lamoda_orders AS $$
+BEGIN
+    RETURN QUERY
+    INSERT INTO lamoda.lamoda_orders (
+        id,
+        ordernr,
+        status,
+        paymentmethod,
+        rejectprice,
+        deliveryprice,
+        paymentdate,
+        isconfirmed,
+        "comment",
+        itemquantity,
+        createdat,
+        updatedat,
+        delivered,
+        shipped,
+        deprecatedid,
+        fullsum,
+        currency,
+        hasdiscrepancyacts,
+        region,
+        city,
+        cityid,
+        isvalid,
+        deliveryintervalid,
+        deliverydate,
+        deliveryintervalfrom,
+        deliveryintervalto,
+        isdeliverypricecustom,
+        standarddeliveryprice,
+        deliverydatemax,
+        deliverydatemin,
+        shippingmethodname,
+        shippingmethodcode,
+        serviceleveltypecode,
+        serviceleveltypename,
+        storagedays,
+        cutoff,
+        hasintervals,
+        code,
+        shopname,
+        partnerid,
+        externaldeliveryinfo
+    )
+    SELECT 
+        order_record ->> 'id',
+        order_record ->> 'orderNr',
+        order_record ->> 'status',
+        order_record ->> 'paymentMethod',
+        order_record ->> 'rejectPrice',
+        order_record ->> 'deliveryPrice',
+        (order_record ->> 'paymentDate')::timestamp,
+        (order_record ->> 'isConfirmed')::boolean,
+        order_record ->> 'comment',
+        (order_record ->> 'itemQuantity')::int,
+        (order_record ->> 'createdAt')::date,
+        (order_record ->> 'updatedAt')::timestamp,
+        (order_record -> 'dates' ->> 'delivered')::timestamp,
+        (order_record -> 'dates' ->> 'shipped')::timestamp,
+        (order_record ->> 'deprecatedId')::bigint,
+        (order_record ->> 'fullSum')::numeric,
+        order_record ->> 'currency',
+        (order_record ->> 'hasDiscrepancyActs')::boolean,
+        (order_record -> '_embedded' -> 'shippingAddress' ->> 'region'),
+        (order_record -> '_embedded' -> 'shippingAddress' ->> 'city'),
+        (order_record -> '_embedded' -> 'shippingAddress' ->> 'cityId'),
+        (order_record -> '_embedded' -> 'shippingAddress' ->> 'isValid')::boolean,
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryIntervalId')::bigint,
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryDate'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryIntervalFrom'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryIntervalTo'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'isDeliveryPriceCustom')::boolean,
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'standardDeliveryPrice'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryDateMax'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'deliveryDateMin'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'shippingMethodName'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'shippingMethodCode'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'serviceLevelTypeCode'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'serviceLevelTypeName'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'storageDays'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'cutOff'),
+        (order_record -> '_embedded' -> 'deliveryMethod' ->> 'hasIntervals')::boolean,
+        (order_record -> '_embedded' -> 'partner' ->> 'code'),
+        (order_record -> '_embedded' -> 'partner' ->> 'shopName'),
+        (order_record -> '_embedded' -> 'partner' ->> 'partnerId')::bigint,
+        (order_record -> '_embedded' -> 'externalDeliveryInfo')
+    FROM JSONB_ARRAY_ELEMENTS(jsonb_data) AS order_record
+    RETURNING *;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- передаем json  в функцию
+SELECT* FROM insert_orders_from_json(
+'{
+  "page" : 1,
+  "limit" : 3,
+  "pages" : 124683,
+  "total" : 374048,
+  "_links" : {
+    "self" : {
+      "href" : "/api/v1/orders?page=6&limit=3"
+    },
+    "first" : {
+      "href" : "/api/v1/orders?page=1&limit=3"
+    },
+    "last" : {
+      "href" : "/api/v1/orders?page=124683&limit=3"
+    },
+    "next" : {
+      "href" : "/api/v1/orders?page=7&limit=3"
+    },
+    "previous" : {
+      "href" : "/api/v1/orders?page=5&limit=3"
+    }
+  },
+  "_embedded" : {
+    "orders" : [ {
+      "id" : "ZK230229-924047-001C",
+      "orderNr" : "ZK230229-924047",
+      "status" : "Confirmed",
+      "paymentMethod" : "TinkoffDolyame",
+      "rejectPrice" : null,
+      "deliveryPrice" : null,
+      "paymentDate" : null,
+      "isEditable" : false,
+      "isConfirmed" : true,
+      "comment" : "",
+      "itemQuantity" : 1,
+      "createdAt" : "2024-02-29",
+      "updatedAt" : "2024-02-29 22:43:40",
+      "dates" : {
+        "delivered" : null,
+        "shipped" : null
+      },
+      "deprecatedId" : 154372863,
+      "fullSum" : "59800.00",
+      "currency" : "rub",
+      "hasDiscrepancyActs" : false,
+      "_links" : {
+        "self" : {
+          "href" : "/api/v1/orders/ZK230229-924047-001C"
+        }
+      },
+      "_embedded" : {
+        "shippingAddress" : {
+          "id" : 154372846,
+          "zipcode" : "*****",
+          "region" : "Свердловская обл",
+          "city" : "Каменск-Уральский",
+          "street" : "*****",
+          "houseNum" : "*****",
+          "apartment" : "*****",
+          "coordinate" : {
+            "latitude" : "*****",
+            "longitude" : "*****"
+          },
+          "cityId" : null,
+          "streetId" : "*****",
+          "buildingId" : "*****",
+          "isValid" : true,
+          "isEditable" : false,
+          "pickupPointId" : "*****"
+        },
+        "deliveryMethod" : {
+          "deliveryIntervalId" : "2803474912",
+          "deliveryDate" : null,
+          "deliveryIntervalFrom" : null,
+          "deliveryIntervalTo" : null,
+          "deliveryPrice" : null,
+          "isDeliveryPriceCustom" : false,
+          "standardDeliveryPrice" : null,
+          "deliveryDateMax" : null,
+          "deliveryDateMin" : null,
+          "shippingMethodName" : "Lamoda | Каменск-Уральский  | Каменская, 84",
+          "shippingMethodCode" : "lamoda_showroom_kamenskuralskiy_kamenskaya84",
+          "isEditable" : false,
+          "serviceLevelTypeCode" : "plus",
+          "serviceLevelTypeName" : null,
+          "storageDays" : null,
+          "cutOff" : null,
+          "hasIntervals" : false
+        },
+        "customer" : {
+          "firstName" : "*****",
+          "lastName" : "*****",
+          "middleName" : "*****",
+          "phone" : "*****",
+          "email" : "*****",
+          "isEditable" : false
+        },
+        "sessions" : [ ],
+        "partner" : {
+          "code" : "FZD",
+          "shopName" : "12Storeez FF",
+          "partnerId" : 734265840
+        },
+        "payments" : [ {
+          "amount" : 5980,
+          "method" : "TinkoffDolyame",
+          "status" : "new",
+          "successfulRedirect" : null,
+          "failureRedirect" : null,
+          "paymentUrl" : null,
+          "template" : null
+        } ],
+        "externalDeliveryInfo" : null
+      }
+    }, {
+      "id" : "ZK230229-651178-001C",
+      "orderNr" : "ZK230229-651178",
+      "status" : "Confirmed",
+      "paymentMethod" : "COD",
+      "rejectPrice" : null,
+      "deliveryPrice" : null,
+      "paymentDate" : null,
+      "isEditable" : false,
+      "isConfirmed" : true,
+      "comment" : "",
+      "itemQuantity" : 1,
+      "createdAt" : "2024-02-29",
+      "updatedAt" : "2024-02-29 22:41:48",
+      "dates" : {
+        "delivered" : null,
+        "shipped" : null
+      },
+      "deprecatedId" : 154372637,
+      "fullSum" : "4980.00",
+      "currency" : "rub",
+      "hasDiscrepancyActs" : false,
+      "_links" : {
+        "self" : {
+          "href" : "/api/v1/orders/ZK230229-651178-001C"
+        }
+      },
+      "_embedded" : {
+        "shippingAddress" : {
+          "id" : 154372620,
+          "zipcode" : "*****",
+          "region" : "Краснодарский край",
+          "city" : "Славянск-на-Кубани",
+          "street" : "*****",
+          "houseNum" : "*****",
+          "apartment" : "*****",
+          "coordinate" : {
+            "latitude" : "*****",
+            "longitude" : "*****"
+          },
+          "cityId" : null,
+          "streetId" : "*****",
+          "buildingId" : "*****",
+          "isValid" : true,
+          "isEditable" : false,
+          "pickupPointId" : "*****"
+        },
+        "deliveryMethod" : {
+          "deliveryIntervalId" : "2801705214",
+          "deliveryDate" : null,
+          "deliveryIntervalFrom" : null,
+          "deliveryIntervalTo" : null,
+          "deliveryPrice" : null,
+          "isDeliveryPriceCustom" : false,
+          "standardDeliveryPrice" : null,
+          "deliveryDateMax" : null,
+          "deliveryDateMin" : null,
+          "shippingMethodName" : "Lamoda | Славянск-на-Кубани | Гриня, 294",
+          "shippingMethodCode" : "lamoda_showroom_snk_grinya_10230364",
+          "isEditable" : false,
+          "serviceLevelTypeCode" : "plus",
+          "serviceLevelTypeName" : null,
+          "storageDays" : null,
+          "cutOff" : null,
+          "hasIntervals" : false
+        },
+        "customer" : {
+          "firstName" : "*****",
+          "lastName" : "*****",
+          "middleName" : "*****",
+          "phone" : "*****",
+          "email" : "*****",
+          "isEditable" : false
+        },
+        "sessions" : [ ],
+        "partner" : {
+          "code" : "FZD",
+          "shopName" : "12Storeez FF",
+          "partnerId" : 734265840
+        },
+        "payments" : [ {
+          "amount" : 49980,
+          "method" : "BertelsmannCod",
+          "status" : "new",
+          "successfulRedirect" : null,
+          "failureRedirect" : null,
+          "paymentUrl" : null,
+          "template" : null
+        } ],
+        "externalDeliveryInfo" : null
+      }
+    }, {
+      "id" : "ZK230229-789871-005C",
+      "orderNr" : "ZK230229-789871",
+      "status" : "Confirmed",
+      "paymentMethod" : "COD",
+      "rejectPrice" : null,
+      "deliveryPrice" : null,
+      "paymentDate" : null,
+      "isEditable" : false,
+      "isConfirmed" : true,
+      "comment" : "",
+      "itemQuantity" : 1,
+      "createdAt" : "2024-02-29",
+      "updatedAt" : "2024-02-29 22:37:35",
+      "dates" : {
+        "delivered" : null,
+        "shipped" : null
+      },
+      "deprecatedId" : 154371756,
+      "fullSum" : "2780.00",
+      "currency" : "rub",
+      "hasDiscrepancyActs" : false,
+      "_links" : {
+        "self" : {
+          "href" : "/api/v1/orders/ZK230229-789871-005C"
+        }
+      },
+      "_embedded" : {
+        "shippingAddress" : {
+          "id" : 154371739,
+          "zipcode" : "*****",
+          "region" : "Московская обл",
+          "city" : "Горки",
+          "street" : "*****",
+          "houseNum" : "*****",
+          "apartment" : "*****",
+          "coordinate" : {
+            "latitude" : "*****",
+            "longitude" : "*****"
+          },
+          "cityId" : null,
+          "streetId" : "*****",
+          "buildingId" : "*****",
+          "isValid" : true,
+          "isEditable" : false,
+          "pickupPointId" : "*****"
+        },
+        "deliveryMethod" : {
+          "deliveryIntervalId" : "2805262875",
+          "deliveryDate" : null,
+          "deliveryIntervalFrom" : null,
+          "deliveryIntervalTo" : null,
+          "deliveryPrice" : null,
+          "isDeliveryPriceCustom" : false,
+          "standardDeliveryPrice" : null,
+          "deliveryDateMax" : null,
+          "deliveryDateMin" : null,
+          "shippingMethodName" : "LMExpress Москва, Юг",
+          "shippingMethodCode" : "lamoda",
+          "isEditable" : false,
+          "serviceLevelTypeCode" : "plus",
+          "serviceLevelTypeName" : null,
+          "storageDays" : null,
+          "cutOff" : null,
+          "hasIntervals" : false
+        },
+        "customer" : {
+          "firstName" : "*****",
+          "lastName" : "*****",
+          "middleName" : "*****",
+          "phone" : "*****",
+          "email" : "*****",
+          "isEditable" : false
+        },
+        "sessions" : [ ],
+        "partner" : {
+          "code" : "FZD",
+          "shopName" : "12Storeez FF",
+          "partnerId" : 734265840
+        },
+        "payments" : [ {
+          "amount" : 27980,
+          "method" : "BertelsmannCod",
+          "status" : "new",
+          "successfulRedirect" : null,
+          "failureRedirect" : null,
+          "paymentUrl" : null,
+          "template" : null
+        } ],
+        "externalDeliveryInfo" : null
+      }
+    } ]
+  }
+}'::jsonb -> '_embedded' -> 'orders');
+
+
+-- итоговая таблица
+SELECT
+	lo.id as "номер заказа",
+	lo.createdat as "дата заказа",
+	lo.shopname as "магазин",
+	mps.productstatusru as "статус продукта",
+    lo.region as "регион",
+    lo.city as "город"
+FROM lamoda.lamoda_orders lo
+JOIN lamoda.map_product_status mps ON lo.status = mps.productstatus;
